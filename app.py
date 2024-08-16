@@ -20,6 +20,15 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
 
 
+def uploader(book_info, content, image_path):
+    processed_image = process_image(image_path)
+    caption = f"{content}\n\n{book_info}"
+    processed_image_path = os.path.join(app.config['UPLOAD_FOLDER'],
+                                        f"processed_{os.path.basename(image_path)}")
+    processed_image.save(processed_image_path)
+    upload_instagram(caption, processed_image_path)
+
+
 @app.route('/', methods=['GET', 'POST'])
 def upload():
     if request.method == 'POST':
