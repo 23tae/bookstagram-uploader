@@ -1,10 +1,19 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
+import os
+import dotenv
+
 
 app = Flask(__name__)
 
 app.secret_key = 'your_secret_key'
 app.config['UPLOAD_FOLDER'] = 'upload/'
 app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif'}
+
+
+dotenv.load_dotenv()
+
+instagram_username = os.getenv('INSTAGRAM_USERNAME')
+instagram_password = os.getenv('INSTAGRAM_PASSWORD')
 
 
 def allowed_file(filename):
