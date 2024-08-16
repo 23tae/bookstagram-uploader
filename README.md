@@ -1,6 +1,9 @@
 # Bookstagram Uploader
 
+
 ## About
+
+![thumbnail](asset/thumbnail.png)
 
 Bookstagram Uploader는 북스타그램을 위해 만들어진 웹 애플리케이션입니다. 사용자가 책 정보와 콘텐츠를 입력하고 이미지를 업로드하면 이를 인스타그램에 게시합니다. 이 애플리케이션은 Flask 프레임워크를 사용하여 구축되었으며, 사용자가 업로드한 이미지를 처리하고 instagrapi를 통해 게시합니다.
 
