@@ -36,7 +36,7 @@ Bookstagram Uploader는 북스타그램을 위해 만들어진 웹 애플리케�
   <http://127.0.0.1:5001>에 접속합니다.
 
 3. 게시글 업로드
-  페이지에서 요구하는 내용을 모두 기입한 뒤 Upload 버튼을 클릭합니다.
+    페이지에서 요구하는 내용을 모두 기입한 뒤 Upload 버튼을 클릭합니다.
     - Book Information: 제목, 저자
     - Content: 업로드할 책 내용
     - Image: 업로드할 이미지
@@ -45,13 +45,13 @@ Bookstagram Uploader는 북스타그램을 위해 만들어진 웹 애플리케�
 ### Uninstall
 
 - 애플리케이션 종료
-  애플리케이션을 사용하지 않는 경우에는 종료합니다.
+    애플리케이션을 사용하지 않는 경우에는 종료합니다.
     ```bash
     make stop
     ```
 
 - 전체 삭제
-  Docker 컨테이너와 이미지를 모두 제거합니다.
+    Docker 컨테이너와 이미지를 모두 제거합니다.
     ```bash
     make clean
     ```
