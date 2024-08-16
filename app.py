@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash
 import os
 import dotenv
 from PIL import Image, ImageOps
+from instagrapi import Client
 
 
 app = Flask(__name__)
@@ -27,6 +28,12 @@ def process_image(image_path):
         image = ImageOps.pad(
             image, (max(image.size), max(image.size)), color='black')
     return image
+
+
+def upload_instagram(caption, image_path):
+    client = Client()
+    client.login(instagram_username, instagram_password)
+    client.photo_upload(image_path, caption)
 
 
 def uploader(book_info, content, image_path):
