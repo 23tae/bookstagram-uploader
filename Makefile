@@ -11,7 +11,7 @@ build:
 		echo "Docker image $(IMAGE_NAME) already exists. Skipping build."; \
 	fi
 
-run: build
+run:
 	@if [ -z "$$(docker ps -q -f name=$(CONTAINER_NAME))" ]; then \
 		echo "Running Docker container..."; \
 		docker run -d -p 5001:5000 --name $(CONTAINER_NAME) $(IMAGE_NAME); \
