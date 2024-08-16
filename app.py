@@ -5,12 +5,11 @@ import dotenv
 
 app = Flask(__name__)
 
-app.secret_key = 'your_secret_key'
+dotenv.load_dotenv()
+
+app.secret_key = os.getenv('FLASK_SECRET_KEY')
 app.config['UPLOAD_FOLDER'] = 'upload/'
 app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif'}
-
-
-dotenv.load_dotenv()
 
 instagram_username = os.getenv('INSTAGRAM_USERNAME')
 instagram_password = os.getenv('INSTAGRAM_PASSWORD')
