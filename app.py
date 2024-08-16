@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
 import os
 import dotenv
+from PIL import Image, ImageOps
 
 
 app = Flask(__name__)
@@ -17,6 +18,15 @@ instagram_password = os.getenv('INSTAGRAM_PASSWORD')
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
+
+
+def process_image(image_path):
+    image = Image.open(image_path)
+
+    if image.size[0] != image.size[1]:
+        image = ImageOps.pad(
+            image, (max(image.size), max(image.size)), color='black')
+    return image
 
 
 def uploader(book_info, content, image_path):
