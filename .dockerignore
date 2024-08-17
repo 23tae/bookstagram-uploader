@@ -7,6 +7,4 @@ test/
 upload/
 asset/
 
-.env.example
-.gitignore
-README.md
+*.md
