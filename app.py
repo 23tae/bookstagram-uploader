@@ -37,6 +37,7 @@ def upload_instagram(caption, image_path):
     client = Client()
     client.login(instagram_username, instagram_password)
     client.photo_upload(image_path, caption)
+    client.logout()
 
 
 def uploader(book_info, content, image_path):
