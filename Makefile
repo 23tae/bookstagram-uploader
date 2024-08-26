@@ -28,7 +28,7 @@ stop:
 	fi
 
 clean:
-	@if [ ! -z "$$(docker ps -q -f name=$(CONTAINER_NAME))" ]; then \
+	@if [ ! -z "$$(docker ps -a -q -f name=$(CONTAINER_NAME))" ]; then \
 		echo "Stopping and removing Docker container..."; \
 		docker stop $(CONTAINER_NAME); \
 		docker rm $(CONTAINER_NAME); \
@@ -42,7 +42,7 @@ clean:
 		echo "No image named $(IMAGE_NAME) to remove."; \
 	fi
 
-rebuild: stop build run
+rebuild: clean build run
 
 restart:
 	@if [ ! -z "$$(docker ps -q -f name=$(CONTAINER_NAME))" ]; then \
