@@ -42,7 +42,11 @@ def upload_instagram(caption, image_path):
 
 def uploader(book_info, content, image_path):
     processed_image = process_image(image_path)
-    caption = f"{content}\n\n{book_info}"
+    # 유저가 책 정보를 입력한 경우
+    if book_info:
+        caption = f"{content}\n\n{book_info}"
+    else:
+        caption = content
     processed_image_path = os.path.join(app.config['UPLOAD_FOLDER'],
                                         f"processed_{os.path.basename(image_path)}")
     processed_image.save(processed_image_path)
@@ -62,6 +66,15 @@ def upload_file():
     content = request.form['content']
     image = request.files['image']
 
+    # 필수 정보를 입력하지 않은 경우
+    if not content:
+        flash("Content is required.", "error")
+        return redirect(url_for('get_form'))
+
+    if not image or not allowed_file(image.filename):
+        flash("Image is required.", "error")
+        return redirect(url_for('get_form'))
+
     # 세션에 book_info를 저장 (최대 3개만 유지)
     recent_book_infos = session.get('recent_book_infos', [])
     if book_info not in recent_book_infos:
@@ -77,7 +90,7 @@ def upload_file():
 
         uploader(book_info, content, image_path)
 
-        flash("Upload success!")
+        flash("Upload success!", "success")
         return redirect(url_for('get_form'))
 
     return redirect(url_for('get_form'))
