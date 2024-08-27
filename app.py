@@ -50,10 +50,10 @@ def uploader(book_info, content, image_path):
 
 
 @app.route('/', methods=['GET'])
-def upload_form():
-    # 세션에 저장된 book_info를 불러옴 (없으면 빈 문자열 반환)
-    saved_book_info = session.get('book_info', '')
-    return render_template('upload.html', book_info=saved_book_info)
+def get_form():
+    # 세션에 저장된 최근 3개의 book_info를 불러옴
+    recent_book_infos = session.get('recent_book_infos', [])
+    return render_template('upload.html', recent_book_infos=recent_book_infos)
 
 
 @app.route('/', methods=['POST'])
@@ -62,8 +62,13 @@ def upload_file():
     content = request.form['content']
     image = request.files['image']
 
-    # 세션에 book_info 저장
-    session['book_info'] = book_info
+    # 세션에 book_info를 저장 (최대 3개만 유지)
+    recent_book_infos = session.get('recent_book_infos', [])
+    if book_info not in recent_book_infos:
+        recent_book_infos.insert(0, book_info)
+        if len(recent_book_infos) > 3:
+            recent_book_infos.pop()
+        session['recent_book_infos'] = recent_book_infos
 
     if image and allowed_file(image.filename):
         filename = image.filename
@@ -73,9 +78,9 @@ def upload_file():
         uploader(book_info, content, image_path)
 
         flash("Upload success!")
-        return redirect(url_for('upload_form'))
+        return redirect(url_for('get_form'))
 
-    return redirect(url_for('upload_form'))
+    return redirect(url_for('get_form'))
 
 
 if __name__ == '__main__':

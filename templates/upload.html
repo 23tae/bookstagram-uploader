@@ -26,12 +26,17 @@
       <form method="POST" action="/" enctype="multipart/form-data">
         <label for="book_info">Book Information:</label>
         <input
+          list="recent_book_info"
           type="text"
           id="book_info"
           name="book_info"
           placeholder="Enter book title and authors..."
-          value="{{ book_info }}"
         />
+        <datalist id="recent_book_info">
+          {% for info in recent_book_infos %}
+          <option value="{{ info }}">
+          {% endfor %}
+        </datalist>
 
         <label for="content">Content:</label>
         <textarea
