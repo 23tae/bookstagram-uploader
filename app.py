@@ -49,30 +49,33 @@ def uploader(book_info, content, image_path):
     upload_instagram(caption, processed_image_path)
 
 
-@app.route('/', methods=['GET', 'POST'])
-def upload():
-    if request.method == 'POST':
-        book_info = request.form['book_info']
-        content = request.form['content']
-        image = request.files['image']
-
-        # 세션에 book_info 저장
-        session['book_info'] = book_info
-
-        if image and allowed_file(image.filename):
-            filename = image.filename
-            image_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            image.save(image_path)
-
-            uploader(book_info, content, image_path)
-
-            flash("Upload success!")
-            return redirect(url_for('upload'))
-
+@app.route('/', methods=['GET'])
+def upload_form():
     # 세션에 저장된 book_info를 불러옴 (없으면 빈 문자열 반환)
     saved_book_info = session.get('book_info', '')
-
     return render_template('upload.html', book_info=saved_book_info)
+
+
+@app.route('/', methods=['POST'])
+def upload_file():
+    book_info = request.form['book_info']
+    content = request.form['content']
+    image = request.files['image']
+
+    # 세션에 book_info 저장
+    session['book_info'] = book_info
+
+    if image and allowed_file(image.filename):
+        filename = image.filename
+        image_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        image.save(image_path)
+
+        uploader(book_info, content, image_path)
+
+        flash("Upload success!")
+        return redirect(url_for('upload_form'))
+
+    return redirect(url_for('upload_form'))
 
 
 if __name__ == '__main__':
