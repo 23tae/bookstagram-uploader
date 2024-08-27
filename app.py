@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, session
 import os
 import dotenv
 from PIL import Image, ImageOps
@@ -56,6 +56,9 @@ def upload():
         content = request.form['content']
         image = request.files['image']
 
+        # 세션에 book_info 저장
+        session['book_info'] = book_info
+
         if image and allowed_file(image.filename):
             filename = image.filename
             image_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
@@ -66,7 +69,10 @@ def upload():
             flash("Upload success!")
             return redirect(url_for('upload'))
 
-    return render_template('upload.html')
+    # 세션에 저장된 book_info를 불러옴 (없으면 빈 문자열 반환)
+    saved_book_info = session.get('book_info', '')
+
+    return render_template('upload.html', book_info=saved_book_info)
 
 
 if __name__ == '__main__':
