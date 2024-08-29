@@ -4,7 +4,8 @@ import dotenv
 from PIL import Image, ImageOps
 from instagrapi import Client
 import threading
-
+import time
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
 
@@ -23,22 +24,39 @@ if not os.path.exists(app.config['UPLOAD_FOLDER']):
 
 # 전역 변수로 로그인 상태 관리
 g_instagram_client = None
+g_last_login_time = None
 
 
 def login_instagram():
-    global g_instagram_client
+    global g_instagram_client, g_last_login_time
     client = Client()
     try:
         client.login(instagram_username, instagram_password)
         g_instagram_client = client
+        g_last_login_time = datetime.now()
         print("Logged in to Instagram")
     except Exception as e:
         print(f"Login failed: {e}")
 
 
-# 비동기로 로그인 작업 수행
-thread = threading.Thread(target=login_instagram)
-thread.start()
+def check_login_status():
+    global g_instagram_client, g_last_login_time
+    while True:
+        current_time = datetime.now()
+        if g_last_login_time is None or (current_time - g_last_login_time) > timedelta(days=1):
+            print("Checking login status...")
+            if g_instagram_client is None or not g_instagram_client.account_info():
+                print("Login expired. Attempting to re-login...")
+                login_instagram()
+            else:
+                g_last_login_time = current_time
+                print("Login is still valid.")
+        time.sleep(3600 * 24)  # 24시간마다 체크
+
+
+# 비동기로 로그인 작업 수행 및 주기적 체크 시작
+threading.Thread(target=login_instagram, daemon=True).start()
+threading.Thread(target=check_login_status, daemon=True).start()
 
 
 def allowed_file(filename):
