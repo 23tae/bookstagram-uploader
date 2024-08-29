@@ -3,6 +3,7 @@ import os
 import dotenv
 from PIL import Image, ImageOps
 from instagrapi import Client
+import threading
 
 
 app = Flask(__name__)
@@ -10,14 +11,22 @@ app = Flask(__name__)
 dotenv.load_dotenv()
 
 app.secret_key = os.getenv('FLASK_SECRET_KEY')
-app.config['UPLOAD_FOLDER'] = 'upload/'
-app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif'}
-
 instagram_username = os.getenv('INSTAGRAM_USERNAME')
 instagram_password = os.getenv('INSTAGRAM_PASSWORD')
 
+app.config['UPLOAD_FOLDER'] = 'upload/'
+app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif'}
+
+
 if not os.path.exists(app.config['UPLOAD_FOLDER']):
     os.makedirs(app.config['UPLOAD_FOLDER'])
+
+
+def login_instagram():
+    client = Client()
+    client.login(instagram_username, instagram_password)
+    session['instagram_client'] = client
+    print("Logged in to Instagram")
 
 
 def allowed_file(filename):
@@ -33,9 +42,7 @@ def process_image(image_path):
     return image
 
 
-def upload_instagram(caption, image_path):
-    client = Client()
-    client.login(instagram_username, instagram_password)
+def upload_instagram(client, caption, image_path):
     client.photo_upload(image_path, caption)
     client.logout()
 
@@ -54,14 +61,24 @@ def uploader(book_info, content, image_path):
 
 
 @app.route('/', methods=['GET'])
-def get_form():
+def index():
+    # 페이지 로딩 시 비동기로 로그인 작업 수행
+    if 'instagram_client' not in session:
+        thread = threading.Thread(target=login_instagram)
+        thread.start()
+
     # 세션에 저장된 최근 3개의 book_info를 불러옴
     recent_book_infos = session.get('recent_book_infos', [])
     return render_template('upload.html', recent_book_infos=recent_book_infos)
 
 
 @app.route('/', methods=['POST'])
-def upload_file():
+def upload():
+    client = session.get('instagram_client')
+    if not client:
+        flash("Login failed. Try again.", "error")
+        return redirect(url_for('index'))
+
     book_info = request.form['book_info']
     content = request.form['content']
     image = request.files['image']
@@ -69,11 +86,11 @@ def upload_file():
     # 필수 정보를 입력하지 않은 경우
     if not content:
         flash("Content is required.", "error")
-        return redirect(url_for('get_form'))
+        return redirect(url_for('index'))
 
     if not image or not allowed_file(image.filename):
         flash("Image is required.", "error")
-        return redirect(url_for('get_form'))
+        return redirect(url_for('index'))
 
     # 세션에 book_info를 저장 (최대 3개만 유지)
     recent_book_infos = session.get('recent_book_infos', [])
@@ -88,12 +105,12 @@ def upload_file():
         image_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         image.save(image_path)
 
-        uploader(book_info, content, image_path)
+        uploader(client, book_info, content, image_path)
 
         flash("Upload success!", "success")
-        return redirect(url_for('get_form'))
+        return redirect(url_for('index'))
 
-    return redirect(url_for('get_form'))
+    return redirect(url_for('index'))
 
 
 if __name__ == '__main__':
