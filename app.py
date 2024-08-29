@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
 import os
 import dotenv
 from PIL import Image, ImageOps
@@ -37,12 +37,15 @@ def login_instagram():
         print("Logged in to Instagram")
     except Exception as e:
         print(f"Login failed: {e}")
+        g_instagram_client = None
+        g_last_login_time = None
 
 
 def check_login_status():
     global g_instagram_client, g_last_login_time
     while True:
         current_time = datetime.now()
+        # 24시간 간격으로 로그인 상태 확인
         if g_last_login_time is None or (current_time - g_last_login_time) > timedelta(days=1):
             print("Checking login status...")
             if g_instagram_client is None or not g_instagram_client.account_info():
@@ -51,7 +54,7 @@ def check_login_status():
             else:
                 g_last_login_time = current_time
                 print("Login is still valid.")
-        time.sleep(3600 * 24)  # 24시간마다 체크
+        time.sleep(3600 * 10)  # 10시간 간격으로 함수 실행
 
 
 # 비동기로 로그인 작업 수행 및 주기적 체크 시작
@@ -89,6 +92,18 @@ def uploader(client, book_info, content, image_path):
     upload_instagram(client, caption, processed_image_path)
 
 
+@app.route('/login_status', methods=['GET'])
+def login_status():
+    global g_instagram_client, g_last_login_time
+    if g_instagram_client and g_last_login_time:
+        return jsonify({
+            'status': 'logged_in',
+            'last_login': g_last_login_time.isoformat()
+        })
+    else:
+        return jsonify({'status': 'logged_out'})
+
+
 @app.route('/', methods=['GET'])
 def index():
     # 세션에 저장된 최근 3개의 book_info를 불러옴
@@ -100,8 +115,9 @@ def index():
 def upload():
     global g_instagram_client
     if not g_instagram_client:
-        flash("Login failed. Try again.", "error")
-        return redirect(url_for('index'))
+        return jsonify({'status': 'error', 'message': "Not logged in to Instagram"}), 403
+        # flash("Login failed. Try again.", "error")
+        # return redirect(url_for('index'))
 
     book_info = request.form['book_info']
     content = request.form['content']

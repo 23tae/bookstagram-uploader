@@ -88,3 +88,17 @@ input[type="submit"]:hover {
 .required {
   color: red;
 }
+
+.login-status {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  font-size: 12px;
+  color: #666;
+  text-align: right;
+}
+
+#uploadButton:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
