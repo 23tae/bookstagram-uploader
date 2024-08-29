@@ -65,36 +65,6 @@
         Last Login: <span id="lastLoginTime">N/A</span>
       </div>
     </div>
-      <script>
-        function checkLoginStatus() {
-            fetch('/login_status')
-                .then(response => response.json())
-                .then(data => {
-                    const statusText = document.getElementById('loginStatusText');
-                    const lastLoginTime = document.getElementById('lastLoginTime');
-                    const uploadButton = document.getElementById('uploadButton');
-
-                    if (data.status === 'logged_in') {
-                        statusText.textContent = 'Logged in';
-                        lastLoginTime.textContent = new Date(data.last_login).toLocaleString();
-                        uploadButton.disabled = false;
-                    } else {
-                        statusText.textContent = 'Logged out';
-                        lastLoginTime.textContent = 'N/A';
-                        uploadButton.disabled = true;
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    document.getElementById('loginStatusText').textContent = 'Error checking status';
-                });
-        }
-
-        // 페이지 로드 시 최초 확인
-        checkLoginStatus();
-
-        // 1분마다 상태 확인
-        setInterval(checkLoginStatus, 60000);
-    </script>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
   </body>
 </html>
