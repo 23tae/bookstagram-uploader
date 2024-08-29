@@ -21,12 +21,19 @@ app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif'}
 if not os.path.exists(app.config['UPLOAD_FOLDER']):
     os.makedirs(app.config['UPLOAD_FOLDER'])
 
+# 전역 변수로 로그인 상태 관리
+g_instagram_client = None
+
 
 def login_instagram():
+    global g_instagram_client
     client = Client()
-    client.login(instagram_username, instagram_password)
-    session['instagram_client'] = client
-    print("Logged in to Instagram")
+    try:
+        client.login(instagram_username, instagram_password)
+        g_instagram_client = client
+        print("Logged in to Instagram")
+    except Exception as e:
+        print(f"Login failed: {e}")
 
 
 def allowed_file(filename):
@@ -44,7 +51,6 @@ def process_image(image_path):
 
 def upload_instagram(client, caption, image_path):
     client.photo_upload(image_path, caption)
-    client.logout()
 
 
 def uploader(book_info, content, image_path):
@@ -63,7 +69,8 @@ def uploader(book_info, content, image_path):
 @app.route('/', methods=['GET'])
 def index():
     # 페이지 로딩 시 비동기로 로그인 작업 수행
-    if 'instagram_client' not in session:
+    global g_instagram_client
+    if not g_instagram_client:
         thread = threading.Thread(target=login_instagram)
         thread.start()
 
@@ -74,8 +81,8 @@ def index():
 
 @app.route('/', methods=['POST'])
 def upload():
-    client = session.get('instagram_client')
-    if not client:
+    global g_instagram_client
+    if not g_instagram_client:
         flash("Login failed. Try again.", "error")
         return redirect(url_for('index'))
 
@@ -105,7 +112,7 @@ def upload():
         image_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         image.save(image_path)
 
-        uploader(client, book_info, content, image_path)
+        uploader(g_instagram_client, book_info, content, image_path)
 
         flash("Upload success!", "success")
         return redirect(url_for('index'))
