@@ -36,6 +36,11 @@ def login_instagram():
         print(f"Login failed: {e}")
 
 
+# 비동기로 로그인 작업 수행
+thread = threading.Thread(target=login_instagram)
+thread.start()
+
+
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
 
@@ -53,7 +58,7 @@ def upload_instagram(client, caption, image_path):
     client.photo_upload(image_path, caption)
 
 
-def uploader(book_info, content, image_path):
+def uploader(client, book_info, content, image_path):
     processed_image = process_image(image_path)
     # 유저가 책 정보를 입력한 경우
     if book_info:
@@ -63,17 +68,11 @@ def uploader(book_info, content, image_path):
     processed_image_path = os.path.join(app.config['UPLOAD_FOLDER'],
                                         f"processed_{os.path.basename(image_path)}")
     processed_image.save(processed_image_path)
-    upload_instagram(caption, processed_image_path)
+    upload_instagram(client, caption, processed_image_path)
 
 
 @app.route('/', methods=['GET'])
 def index():
-    # 페이지 로딩 시 비동기로 로그인 작업 수행
-    global g_instagram_client
-    if not g_instagram_client:
-        thread = threading.Thread(target=login_instagram)
-        thread.start()
-
     # 세션에 저장된 최근 3개의 book_info를 불러옴
     recent_book_infos = session.get('recent_book_infos', [])
     return render_template('upload.html', recent_book_infos=recent_book_infos)
